@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Fresh Menu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap');
+
+  :root {
+    --primary: #ff6b35;
+    --secondary: #f7c59f;
+    --dark: #1a1a2e;
+    --card-bg: #ffffff;
+    --text: #333;
+    --muted: #888;
+    --green: #25d366;
+    --gold: #ffd700;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── FLOATING PARTICLES ── */
+  .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .particle {
+    position: absolute;
+    font-size: 20px;
+    animation: float linear infinite;
+    opacity: 0.15;
+  }
+  @keyframes float {
+    0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.15; }
+    90% { opacity: 0.15; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+    animation: slideDown 0.8s ease;
+  }
+  @keyframes slideDown {
+    from { transform: translateY(-40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .logo-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #ff9a3c);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(255,107,53,0.5);
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,107,53,0.4); }
+    50% { box-shadow: 0 0 40px rgba(255,107,53,0.8); }
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  .tagline {
+    color: var(--secondary);
+    font-size: 0.95rem;
+    font-weight: 300;
+    margin-top: 0.3rem;
+    letter-spacing: 1px;
+  }
+  .date-badge {
+    display: inline-block;
+    background: rgba(255,107,53,0.2);
+    border: 1px solid rgba(255,107,53,0.4);
+    color: var(--secondary);
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-top: 0.6rem;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── NAV TABS ── */
+  .nav-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    position: relative; z-index: 10;
+    animation: fadeIn 1s ease 0.3s both;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .tab-btn {
+    padding: 0.5rem 1.2rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255,107,53,0.4);
+  }
+
+  /* ── MENU GRID ── */
+  .menu-section {
+    display: none;
+    padding: 0.5rem 1rem 1rem;
+    position: relative; z-index: 10;
+    animation: fadeInUp 0.5s ease;
+  }
+  .menu-section.active { display: block; }
+  @keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .section-title {
+    text-align: center;
+    color: var(--secondary);
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .menu-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: cardPop 0.5s ease both;
+  }
+  .menu-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  }
+  @keyframes cardPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .menu-card:nth-child(1) { animation-delay: 0.05s; }
+  .menu-card:nth-child(2) { animation-delay: 0.1s; }
+  .menu-card:nth-child(3) { animation-delay: 0.15s; }
+  .menu-card:nth-child(4) { animation-delay: 0.2s; }
+  .menu-card:nth-child(5) { animation-delay: 0.25s; }
+  .menu-card:nth-child(6) { animation-delay: 0.3s; }
+
+  .card-emoji {
+    text-align: center;
+    font-size: 3rem;
+    padding: 1.2rem 1rem 0.5rem;
+    background: linear-gradient(135deg, #fff8f0, #fff);
+  }
+  .card-body { padding: 0.8rem 1rem 1rem; }
+  .card-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+  }
+  .card-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 0.6rem;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .badge-veg { background: #e8f5e9; color: #2e7d32; }
+  .badge-nonveg { background: #fce4ec; color: #c62828; }
+  .badge-special { background: #fff8e1; color: #e65100; }
+  .sold-out { opacity: 0.5; }
+  .sold-out .card-emoji::after {
+    content: 'SOLD OUT';
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #c62828;
+    letter-spacing: 2px;
+    margin-top: -0.5rem;
+  }
+
+  /* ── ANNOUNCEMENT BANNER ── */
+  .announcement {
+    max-width: 900px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,154,60,0.1));
+    border: 1px solid rgba(255,107,53,0.3);
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative; z-index: 10;
+    animation: fadeIn 1s ease 0.6s both;
+  }
+  .announcement-icon { font-size: 1.3rem; }
+  .announcement-text { font-size: 0.85rem; color: var(--secondary); line-height: 1.5; }
+  .announcement-text strong { color: #fff; }
+
+  /* ── WHATSAPP SECTION ── */
+  .whatsapp-section {
+    max-width: 900px;
+    margin: 1.5rem auto;
+    padding: 0 1rem 2rem;
+    position: relative; z-index: 10;
+  }
+  .wa-card {
+    background: rgba(255,255,255,0.97);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    animation: fadeInUp 0.8s ease 0.5s both;
+  }
+  .wa-icon {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    animation: bounce 2s ease infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .wa-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+  }
+  .wa-subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.2rem;
+    line-height: 1.6;
+  }
+  .wa-features {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .wa-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: #555;
+  }
+  .wa-feature-icon { font-size: 1rem; }
+  .wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--green);
+    color: #fff;
+    padding: 0.9rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    border: none; cursor: pointer; font-family: 'Poppins', sans-serif;
+  }
+  .wa-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(37,211,102,0.5);
+  }
+  .wa-note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.8rem;
+  }
+  .wa-note a { color: var(--primary); text-decoration: none; }
+
+  /* ── QR CODE SECTION ── */
+  .qr-section {
+    max-width: 900px;
+    margin: 0 auto 2rem;
+    padding: 0 1rem;
+    text-align: center;
+    position: relative; z-index: 10;
+  }
+  .qr-card {
+    background: rgba(255,255,255,0.97);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: inline-block;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    animation: fadeInUp 0.8s ease 0.7s both;
+  }
+  .qr-title {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    letter-spacing: 1px;
+  }
+  #qr-canvas { display: block; }
+  .qr-url {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    word-break: break-all;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.75rem;
+    position: relative; z-index: 10;
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    background: rgba(255,107,53,0.1);
+    border-top: 1px solid rgba(255,107,53,0.2);
+    border-bottom: 1px solid rgba(255,107,53,0.2);
+    overflow: hidden;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+    position: relative; z-index: 10;
+  }
+  .ticker-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: ticker 20s linear infinite;
+    color: var(--secondary);
+    font-size: 0.82rem;
+    padding-left: 100%;
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+
+  @media (max-width: 480px) {
+    .menu-grid { grid-template-columns: 1fr; }
+    .wa-features { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<!-- Header -->
+<header>
+  <div class="logo-ring">🍽️</div>
+  <h1>Daily Fresh Menu</h1>
+  <p class="tagline">Home-cooked · Fresh · Delivered with love</p>
+  <div class="date-badge" id="today-date"></div>
+</header>
+
+<!-- Ticker -->
+<div class="ticker-wrap">
+  <span class="ticker-content" id="ticker-text">
+    🌟 Fresh meals cooked daily &nbsp;&nbsp;&nbsp; 🥗 Healthy & hygienic &nbsp;&nbsp;&nbsp; 🚚 Order before 11 AM for lunch &nbsp;&nbsp;&nbsp; ⭐ Customer favourite: Dal Tadka &nbsp;&nbsp;&nbsp; 📱 Subscribe on WhatsApp for daily menu updates &nbsp;&nbsp;&nbsp;
+  </span>
+</div>
+
+<!-- Announcement -->
+<div class="announcement" style="padding: 0 1rem; max-width:900px; margin: 0 auto 0.75rem; z-index:10; position:relative;">
+  <span class="announcement-icon">📢</span>
+  <div class="announcement-text" id="announcement-text">
+    <strong>Today's Special:</strong> Loading today's menu...
+  </div>
+</div>
+
+<!-- Nav Tabs -->
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab('all')">All Items</button>
+  <button class="tab-btn" onclick="showTab('breakfast')">🌅 Breakfast</button>
+  <button class="tab-btn" onclick="showTab('lunch')">☀️ Lunch</button>
+  <button class="tab-btn" onclick="showTab('dinner')">🌙 Dinner</button>
+  <button class="tab-btn" onclick="showTab('snacks')">🍟 Snacks</button>
+</div>
+
+<!-- Menu Sections (populated by JS from menuData) -->
+<div id="menu-container" style="position:relative; z-index:10;"></div>
+
+<!-- WhatsApp Section -->
+<div class="whatsapp-section">
+  <div class="wa-card">
+    <div class="wa-icon">💬</div>
+    <h2 class="wa-title">Get Daily Menu on WhatsApp</h2>
+    <p class="wa-subtitle">
+      Subscribe to receive today's menu automatically every morning.<br>
+      Send <strong>"STOP"</strong> anytime to pause. Send <strong>"HI"</strong> to restart.
+    </p>
+    <div class="wa-features">
+      <div class="wa-feature"><span class="wa-feature-icon">⏰</span> Daily 8 AM update</div>
+      <div class="wa-feature"><span class="wa-feature-icon">✅</span> No spam ever</div>
+      <div class="wa-feature"><span class="wa-feature-icon">🔇</span> Pause anytime</div>
+      <div class="wa-feature"><span class="wa-feature-icon">🆓</span> Completely free</div>
+    </div>
+    <button class="wa-btn" onclick="subscribeWhatsApp()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Subscribe on WhatsApp
+    </button>
+    <p class="wa-note">By subscribing, you agree to receive menu updates. <a href="#" onclick="showPrivacy()">Privacy policy</a></p>
+  </div>
+</div>
+
+<!-- QR Code Section -->
+<div class="qr-section">
+  <div class="qr-card">
+    <p class="qr-title">📱 SCAN TO VIEW MENU</p>
+    <canvas id="qr-canvas" width="160" height="160"></canvas>
+    <p class="qr-url" id="qr-url-text"></p>
+  </div>
+</div>
+
+<footer>
+  &copy; 2025 Daily Fresh Menu &nbsp;·&nbsp; Made with ❤️ &nbsp;·&nbsp; Updated daily
+</footer>
+
+<!-- QR Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+// ══════════════════════════════════════════════
+// MENU DATA — Edit this section to change menu
+// ══════════════════════════════════════════════
+const menuData = {
+  announcement: "Paneer Butter Masala is today's chef special! Order before 11 AM for lunch delivery.",
+
+  breakfast: [
+    { name: "Poha", emoji: "🌾", desc: "Flattened rice with peanuts, curry leaves & lemon", price: "₹60", type: "veg", available: true },
+    { name: "Upma", emoji: "🥣", desc: "Semolina cooked with vegetables and mustard seeds", price: "₹55", type: "veg", available: true },
+    { name: "Idli Sambar", emoji: "🫓", desc: "Soft rice cakes with lentil soup & coconut chutney", price: "₹70", type: "veg", available: true },
+    { name: "Paratha + Curd", emoji: "🫶", desc: "Whole wheat stuffed paratha with fresh yogurt", price: "₹80", type: "veg", available: true },
+  ],
+
+  lunch: [
+    { name: "Dal Tadka + Rice", emoji: "🍛", desc: "Yellow lentils tempered with cumin, served with steamed rice", price: "₹120", type: "veg", available: true, special: true },
+    { name: "Paneer Butter Masala", emoji: "🧀", desc: "Cottage cheese in rich tomato-cream gravy with naan", price: "₹160", type: "veg", available: true, special: true },
+    { name: "Chicken Curry + Rice", emoji: "🍗", desc: "Home-style chicken curry with steamed rice & salad", price: "₹180", type: "nonveg", available: true },
+    { name: "Rajma Chawal", emoji: "🫘", desc: "Kidney beans curry with basmati rice & pickle", price: "₹110", type: "veg", available: true },
+    { name: "Fish Curry + Rice", emoji: "🐟", desc: "Coastal style fish curry with steamed rice", price: "₹200", type: "nonveg", available: false },
+    { name: "Veg Thali", emoji: "🍱", desc: "2 subzi + dal + rice + roti + curd + dessert", price: "₹150", type: "veg", available: true },
+  ],
+
+  dinner: [
+    { name: "Roti + Sabzi", emoji: "🫓", desc: "2 whole wheat rotis with seasonal vegetable curry", price: "₹90", type: "veg", available: true },
+    { name: "Khichdi", emoji: "🥘", desc: "Comforting rice-lentil porridge with ghee & papad", price: "₹80", type: "veg", available: true },
+    { name: "Egg Curry + Rice", emoji: "🥚", desc: "Boiled eggs in spiced onion-tomato gravy", price: "₹130", type: "nonveg", available: true },
+    { name: "Methi Thepla", emoji: "🌿", desc: "Fenugreek flatbread with pickle & curd", price: "₹70", type: "veg", available: true },
+  ],
+
+  snacks: [
+    { name: "Samosa (2 pcs)", emoji: "🥟", desc: "Crispy pastry filled with spiced potato & peas", price: "₹40", type: "veg", available: true },
+    { name: "Vada Pav", emoji: "🍔", desc: "Mumbai street-style spiced potato fritter in bun", price: "₹35", type: "veg", available: true },
+    { name: "Chai", emoji: "☕", desc: "Masala ginger tea with milk", price: "₹20", type: "veg", available: true },
+    { name: "Lassi", emoji: "🥛", desc: "Chilled sweet yogurt drink", price: "₹50", type: "veg", available: true },
+  ]
+};
+
+// ══════════════════════════════════════════════
+// CONFIG — Change your WhatsApp number here
+// ══════════════════════════════════════════════
+const WHATSAPP_NUMBER = "919876543210"; // Format: country code + number, no +
+const WEBSITE_URL = window.location.href.split('?')[0];
+
+// ══════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════
+function renderMenu() {
+  // Date
+  const d = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('today-date').textContent = d.toLocaleDateString('en-IN', opts);
+
+  // Announcement
+  document.getElementById('announcement-text').innerHTML =
+    '<strong>Today\'s Special:</strong> ' + menuData.announcement;
+
+  // Build sections
+  const container = document.getElementById('menu-container');
+  const categories = ['breakfast','lunch','dinner','snacks'];
+  const labels = { breakfast:'🌅 Breakfast', lunch:'☀️ Lunch', dinner:'🌙 Dinner', snacks:'🍟 Snacks' };
+
+  categories.forEach(cat => {
+    const sec = document.createElement('div');
+    sec.className = 'menu-section';
+    sec.id = 'sec-' + cat;
+    sec.innerHTML = `<p class="section-title" style="padding:0 1rem;">${labels[cat]}</p><div class="menu-grid" style="padding:0 1rem;">` +
+      menuData[cat].map(item => `
+        <div class="menu-card ${!item.available ? 'sold-out' : ''}">
+          <div class="card-emoji">${item.emoji}</div>
+          <div class="card-body">
+            <div class="card-name">${item.name}</div>
+            <div class="card-desc">${item.desc}</div>
+            <div class="card-footer">
+              <span class="price">${item.price}</span>
+              <span class="badge badge-${item.special ? 'special' : item.type}">
+                ${item.special ? '⭐ Special' : item.type === 'veg' ? '🟢 Veg' : '🔴 Non-veg'}
+              </span>
+            </div>
+          </div>
+        </div>`).join('') + `</div>`;
+    container.appendChild(sec);
+  });
+
+  // "All" virtual section
+  const allSec = document.createElement('div');
+  allSec.className = 'menu-section active';
+  allSec.id = 'sec-all';
+  categories.forEach(cat => {
+    allSec.innerHTML += `<p class="section-title" style="padding:0 1rem; margin-top:1rem;">${labels[cat]}</p><div class="menu-grid" style="padding:0 1rem;">` +
+      menuData[cat].map(item => `
+        <div class="menu-card ${!item.available ? 'sold-out' : ''}">
+          <div class="card-emoji">${item.emoji}</div>
+          <div class="card-body">
+            <div class="card-name">${item.name}</div>
+            <div class="card-desc">${item.desc}</div>
+            <div class="card-footer">
+              <span class="price">${item.price}</span>
+              <span class="badge badge-${item.special ? 'special' : item.type}">
+                ${item.special ? '⭐ Special' : item.type === 'veg' ? '🟢 Veg' : '🔴 Non-veg'}
+              </span>
+            </div>
+          </div>
+        </div>`).join('') + `</div>`;
+  });
+  container.insertBefore(allSec, container.firstChild);
+}
+
+function showTab(cat) {
+  document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + cat).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// WHATSAPP
+// ══════════════════════════════════════════════
+function subscribeWhatsApp() {
+  const msg = encodeURIComponent("HI\n\nI'd like to subscribe to the daily food menu updates! 🍽️");
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+}
+function showPrivacy() {
+  alert("We only send daily menu updates. Reply STOP to unsubscribe anytime. No data is shared with third parties.");
+}
+
+// ══════════════════════════════════════════════
+// QR CODE
+// ══════════════════════════════════════════════
+function generateQR() {
+  const url = WEBSITE_URL;
+  document.getElementById('qr-url-text').textContent = url.length > 40 ? url.substring(0,37)+'...' : url;
+
+  const canvas = document.getElementById('qr-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = 160;
+  canvas.width = size; canvas.height = size;
+
+  try {
+    new QRCode(canvas, {
+      text: url,
+      width: size,
+      height: size,
+      colorDark: "#1a1a2e",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch(e) {
+    // Fallback — draw placeholder
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(0,0,size,size);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Scan QR', size/2, size/2 - 10);
+    ctx.fillText('(deploy to see)', size/2, size/2 + 10);
+  }
+}
+
+// ══════════════════════════════════════════════
+// PARTICLES
+// ══════════════════════════════════════════════
+function spawnParticles() {
+  const emojis = ['🍕','🍜','🥗','🍛','🥘','🍱','🥙','🌮','🍔','🥐','🍩','🍎'];
+  const container = document.getElementById('particles');
+  for(let i=0; i<18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.animationDuration = (12 + Math.random()*20) + 's';
+    p.style.animationDelay = (Math.random()*15) + 's';
+    p.style.fontSize = (14 + Math.random()*14) + 'px';
+    container.appendChild(p);
+  }
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+renderMenu();
+spawnParticles();
+window.addEventListener('load', function() {
+  setTimeout(generateQR, 500);
+});
+</script>
+</body>
+</html>
